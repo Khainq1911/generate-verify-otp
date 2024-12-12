@@ -12,6 +12,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -159,6 +160,7 @@ func VerifyOTP(c echo.Context, db *gorm.DB, mqttClient mqtt.Client) error {
 			Message:    "Invalid OTP",
 		})
 	}
+	
 
 	if time.Now().After(otpRecord.ExpiresAt) {
 		mqttClient.Publish("otp/verification", 0, false, "OTP verification failed: OTP expired")
@@ -200,6 +202,7 @@ func sub(client mqtt.Client) {
 
 func main() {
 	e := echo.New()
+	e.Use(middleware.CORS())
 	db := connectDB()
 
 	err := godotenv.Load()
@@ -241,7 +244,7 @@ func main() {
 			Data:       otps,
 		})
 	})
-	
+
 	e.POST("/verify-otp", func(c echo.Context) error {
 		return VerifyOTP(c, db, client)
 	})

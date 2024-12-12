@@ -1,50 +1,61 @@
-const inputs = document.querySelectorAll(".otp-field input");
+const inputs = document.querySelectorAll(".value");
+const verify_btn = document.querySelector(".verify-btn");
+
+inputs[0].focus();
 
 inputs.forEach((input, index) => {
-    input.dataset.index = index;
-    input.addEventListener("keyup", handleOtp);
-    input.addEventListener("paste", handleOnPasteOtp);
+  input.addEventListener("input", (e) => {
+    let value = e.target.value;
+    if (value && inputs.length - 1 > index) {
+      inputs[index + 1].focus();
+    }
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && index > 0 && !input.value) {
+      inputs[index - 1].focus();
+    }
+  });
 });
 
-function handleOtp(e) {
-    const input = e.target;
-   
-    let value = input.value;
-    let isValidInput = value.match(/[0-9a-z]/gi);
-    input.value = "";
-    input.value = isValidInput ? value[0] : "";
+const checkOtp = () => {
+  const otp = Array.from(inputs)
+    .map((item, index) => {
+      if (!item.value) {
+        inputs[index].focus();
+        throw new Error("Incomplete OTP");
+      }
+      return item.value;
+    })
+    .join("");
 
-    let fieldIndex = input.dataset.index;
-    if (fieldIndex < inputs.length - 1 && isValidInput) {
-        input.nextElementSibling.focus();
-    }
+  return otp;
+};
 
-    if (e.key === "Backspace" && fieldIndex > 0) {
-        input.previousElementSibling.focus();
-    }
-
-    if (fieldIndex == inputs.length - 1 && isValidInput) {
-        submit();
-    }
-}
-
-function handleOnPasteOtp(e) {
-    const data = e.clipboardData.getData("text");
-    const value = data.split("");
-    if (value.length === inputs.length) {
-        inputs.forEach((input, index) => (input.value = value[index]));
-        submit();
-    }
-}
-
-function submit() {
-    console.log("Submitting...");
-    let otp = "";
-    inputs.forEach((input) => {
-        otp += input.value;
-        input.disabled = true;
-        input.classList.add("disabled");
+async function getData(otp) {
+  const url = "http://localhost:3000/verify-otp";
+  verify_btn.disabled = true;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ otp_code: otp }),
     });
-    console.log(otp);
-    
-}   
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+    window.alert("OTP verified successful!");
+  } catch (error) {
+    window.alert("OTP verified fail!");
+    console.error(error.message);
+  }
+}
+
+const handleSubmit = () => {
+  const otp = checkOtp();
+  getData(otp);
+  verify_btn.disabled = false;
+};
+
+verify_btn.addEventListener("click", handleSubmit);
