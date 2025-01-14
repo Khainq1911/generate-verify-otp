@@ -27,3 +27,33 @@
 .verify-btn:hover{
   background-color: #536e85;
 }
+
+.pass-btn{
+  width: 200px;
+  position: absolute;
+  top: 280px;
+   left: 50%;
+   transform: translateX(-50%);
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  background-color: #3d5265;
+  color: #fff;
+  margin-top: 20px;
+ 
+ }
+ .pass-btn:hover{
+   background-color: #536e85;
+ }
+
+ .pass-text{
+  position: absolute;
+  font-size: 48px;
+  top: 320px;
+  left: 50%;
+  transform: translateX(-50%);
+ }
+ 
+ .hide{
+  display: none;
+ }
